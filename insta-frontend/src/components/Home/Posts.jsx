@@ -8,7 +8,6 @@ const BASE_URL = "http://127.0.0.1:4000";
 
 export const Posts = ({ posts, setPosts }) => {
   const { user } = useContext(AuthContext);
-  // const [open, setOpen] = useState(false);
 
   async function toggleLike(postId) {
     const res = await fetch(`${BASE_URL}/posts/like/${postId}`, {
@@ -37,6 +36,10 @@ export const Posts = ({ posts, setPosts }) => {
     );
   }
 
+  function handlePostDelete(postId) {
+    setPosts(posts.filter((p) => p._id !== postId));
+  }
+
   useEffect(() => {
     async function loadPosts() {
       //   const res = await fetch(`${BASE_URL}/posts`, {
@@ -59,9 +62,17 @@ export const Posts = ({ posts, setPosts }) => {
   }, [user, setPosts]);
 
   return (
-    <div className="flex flex-col gap-6 w-[400px] text-sm">
+    <div className="flex flex-col gap-6 w-[600px] text-sm">
       {posts.map((post) => {
-        return <Post key={post._id} post={post} toggleLike={toggleLike} onCommentAdd={handleCommentAdd} />;
+        return (
+          <Post
+            key={post._id}
+            post={post}
+            toggleLike={toggleLike}
+            onCommentAdd={handleCommentAdd}
+            onPostDelete={handlePostDelete}
+          />
+        );
       })}
     </div>
   );

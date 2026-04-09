@@ -17,3 +17,7 @@ export function uploadFileApi(file) {
 export function updatePostApi(postId, { imageUrl, caption }) {
     return api.put(`/posts/${postId}`, { imageUrl, caption });
 }
+
+export function deletePostApi(postId) {
+    return api.delete(`/posts/${postId}`);
+}

@@ -1,10 +1,10 @@
 const { response, request } = require("express");
-const { Post } = require("../models/post.model");
-const { User } = require("../models/user.model");
+const { postModel } = require("../models/post.model");
+const { userModel } = require("../models/user.model");
 
 const getAllPosts = async (request, response) => {
     try {
-        const posts = await Post.find().populate("author", "username email name").sort({ createdAt: -1 });
+        const posts = await postModel.find().populate("author", "username email name profileImg").sort({ createdAt: -1 });
 
         return response.status(200).json(posts);
     } catch (err) {
@@ -21,22 +21,22 @@ const createPost = async (request, response) => {
 
 
     try {
-        // const user = await User.findById(author);
+        // const user = await userModel.findById(author);
 
         // if (!user) {
         //     return response.status(400).json({ message: "Invalid author" });
         // }
         const user = request.user;
-        const post = new Post({ author: user._id, imageUrl, caption });
+        const post = new postModel({ author: user._id, imageUrl, caption });
         const savedPost = await post.save();
 
         if (!savedPost) {
             return response.status(500).json({ message: "Internal Server Error" });
         }
 
-        const populatedPost = await Post.findById(savedPost._id).populate(
+        const populatedPost = await postModel.findById(savedPost._id).populate(
             "author",
-            "username name email",
+            "username name email profileImg",
         );
         return response.status(200).json(populatedPost);
     }
@@ -51,7 +51,7 @@ const toggleLike = async (request, response) => {
     const { postId } = request.params;
     console.log(postId)
     try {
-        const post = await Post.findById(postId);
+        const post = await postModel.findById(postId);
         console.log(post)
 
         if (!post) {
@@ -83,9 +83,9 @@ const toggleLike = async (request, response) => {
             });
         }
 
-        const populatedPost = await Post.findById(savedPost._id).populate(
+        const populatedPost = await postModel.findById(savedPost._id).populate(
             "author",
-            "username name email",
+            "username name email profileImg",
         );
 
         return response.status(200).json(populatedPost);
@@ -106,7 +106,7 @@ const updatePost = async (request, response) => {
     }
 
     try {
-        const post = await Post.findById(postId);
+        const post = await postModel.findById(postId);
         if (!post) {
             return response.status(400).json({ message: "Post not found" });
         }
@@ -141,12 +141,12 @@ const deletePost = async (request, response) => {
 
 
 
-        const post = await Post.findById(postId);
+        const post = await postModel.findById(postId);
         if (!post) {
             return response.status(400).json({ message: "Post not found" });
         }
         if (request.user._id.toString() === post.author.toString()) {
-            await Post.deleteOne({ _id: postId });
+            await postModel.deleteOne({ _id: postId });
 
             return response
                 .status(200)

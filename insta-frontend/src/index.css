@@ -1,74 +1,21 @@
-/* :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+:root {
+  --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  --ig-primary: #0095f6;
+  --ig-primary-hover: #1877f2;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #000000;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
@@ -78,6 +25,26 @@ button:focus-visible {
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
-
   }
+
+  .ig-story-gradient {
+    background: var(--ig-gradient);
+    padding: 2px;
+    border-radius: 9999px;
+  }
+
+  .ig-active-nav {
+    @apply font-bold;
+  }
+}
+
+/* Magic Light Theme Toggle using CSS Filters */
+body.light-theme {
+  background-color: #ffffff;
+  filter: invert(1) hue-rotate(180deg);
+}
+
+body.light-theme img,
+body.light-theme video {
+  filter: invert(1) hue-rotate(180deg);
 }

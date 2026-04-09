@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { User } = require("../models/user.model");
+const { userModel } = require("../models/user.model");
 
 const verifyAuth = async (request, response, next) => {
     const header = request.headers.authorization;
@@ -20,7 +20,7 @@ const verifyAuth = async (request, response, next) => {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         const userId = decodedToken.sub;
 
-        const user = await User.findById(userId);
+        const user = await userModel.findById(userId);
         if (!user) {
             return response
                 .status(403)

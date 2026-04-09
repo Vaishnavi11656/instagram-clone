@@ -16,7 +16,7 @@ const storage = new CloudinaryStorage({
         folder: "profile-pics",
         format: async (req, file) => {
             let extArray = file.originalname.split(".");
-            let extension = extArray[extArray.length - 1];
+            let extension = extArray[extArray.length - 1].toLowerCase();
             return extension;
         },
     },
@@ -25,12 +25,29 @@ const storage = new CloudinaryStorage({
 const parser = multer({
     storage: storage,
     fileFilter: function (req, file, cb) {
-        let extArray = file.originalname.split(".");
-        let extension = extArray[extArray.length - 1];
-        let allowedExt = ["png", "jpg", "jpeg"];
-        if (!allowedExt.includes(extension)) {
-            return cb(new Error("Only image files are allowed!"), false);
+        if (!file.originalname || typeof file.originalname !== 'string') {
+            return cb(new Error("Invalid file name!"), false);
         }
+
+        // Get extension - handle cases with no extension
+        const nameParts = file.originalname.toLowerCase().split(".");
+        const extension = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+
+        // Allow common image extensions
+        const allowedExt = ["png", "jpg", "jpeg", "gif", "webp", "bmp"];
+        const allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp", "image/bmp"];
+
+        const isValidExt = extension && allowedExt.includes(extension);
+        const isValidMime = allowedMimeTypes.includes(file.mimetype);
+
+        if (!extension) {
+            return cb(new Error("File must have an extension (e.g., .jpg, .png)"), false);
+        }
+
+        if (!isValidExt && !isValidMime) {
+            return cb(new Error(`Only image files (PNG, JPG, JPEG, GIF, WEBP) are allowed!`), false);
+        }
+
         cb(null, true);
     },
 });

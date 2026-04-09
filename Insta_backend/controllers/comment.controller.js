@@ -1,5 +1,5 @@
-const { Comment } = require("../models/comment.model");
-const { Post } = require("../models/post.model");
+const { commentModel } = require("../models/comment.model");
+const { postModel } = require("../models/post.model");
 
 
 const createComment = async (request, response) => {
@@ -14,13 +14,13 @@ const createComment = async (request, response) => {
 
     try {
         // Step 2: find the post -> if no post, return error, else continue
-        const post = await Post.findById(postId);
+        const post = await postModel.findById(postId);
         if (!post) {
             return response.status(400).json({ message: "This post does not exist" });
         }
 
         // Step 3: Create a new comment
-        const comment = new Comment({
+        const comment = new commentModel({
             author: request.user._id,
             text,
             post: postId,
@@ -56,8 +56,8 @@ const getAllComments = async (request, response) => {
     try {
         const { postId } = request.params;
 
-        const comments = await Comment.find({ post: postId })
-            .populate("author", "username name email")
+        const comments = await commentModel.find({ post: postId })
+            .populate("author", "username name email profileImg")
             .sort({ createdAt: -1 });
 
         return response.status(200).json({
@@ -86,13 +86,13 @@ const updateComment = async (request, response) => {
         }
 
         // find comment
-        const comment = await Comment.findById(commentId);
+        const comment = await commentModel.findById(commentId);
         if (!comment) {
             return response.status(404).json({ message: "Invalid comment id" });
         }
 
         // authorization
-        if (comment.author.toString() !== request.user.id.toString()) {
+        if (comment.author.toString() !== request.user._id.toString()) {
             return response.status(403).json({ message: "Unauthorized" });
         }
 

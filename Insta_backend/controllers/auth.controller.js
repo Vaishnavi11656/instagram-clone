@@ -1,4 +1,4 @@
-const { User } = require("../models/user.model");
+const { userModel } = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -14,7 +14,7 @@ const userLogin = async (request, response) => {
             .json({ message: "please fill all the details" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await userModel.findOne({ email });
     if (!user) {
         return response.status(400).json({ message: "Invalid credentials" });
     }
@@ -42,7 +42,7 @@ const userSignup = async (request, response) => {
             .json({ message: "please fill all the details" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await userModel.findOne({ email });
     if (existingUser) {
         return response.status(400).json({
             message: "User already exists! please try a different email id.",
@@ -52,7 +52,7 @@ const userSignup = async (request, response) => {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds)
 
-    const newUser = User({ username, email, passwordHash, name });
+    const newUser = userModel({ username, email, passwordHash, name });
     const savedUser = await newUser.save();
 
     if (!savedUser) {

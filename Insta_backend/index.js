@@ -122,6 +122,8 @@ const mongoose = require("mongoose");
 const { createComment, updateComment, getAllComments } = require("./controllers/comment.controller");
 const { userRouter } = require("./routers/user.router");
 const { postRouter } = require("./routers/post.router");
+const { messagesRouter } = require("./routers/messages.router");
+const { notificationsRouter } = require("./routers/notifications.router");
 const cors = require("cors");
 const { verifyAuth } = require("./middlewares.js/verifyAuth");
 
@@ -133,10 +135,31 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 // Middleware
 app.use(express.json());
-app.use(cors());
 
-app.use("/", userRouter);
+// CORS configuration - allow requests from frontend
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow localhost and 127.0.0.1 on any port for development
+        if (!origin || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+app.use(cors({
+    origin: "*"
+}));
+
+app.use("/users", userRouter);
 app.use("/posts", postRouter);
+app.use("/messages", messagesRouter);
+app.use("/notifications", notificationsRouter);
+
 // app.post("/login", userLogin);
 
 // app.post("/signup", userSignup);
@@ -153,10 +176,97 @@ app.use("/posts", postRouter);
 // //method:Delect
 // app.delete("/posts/:postId",verifyAuth,deletePost);
 
-//comments routers,getallcomments,update comments
+// comments routers,getallcomments,update comments
 app.post("/comments/:postId", verifyAuth, createComment);
 app.get("/comments/:postId", verifyAuth, getAllComments)
 app.patch("/comments/:commentId", verifyAuth, updateComment)
+
+// DEBUG: Create sample messages and notifications
+app.get("/debug/create-test-data", verifyAuth, async (req, res) => {
+    try {
+        const { userModel } = require("./models/user.model");
+        const { Conversation, Message } = require("./controllers/messages.controller");
+        const { Notification } = require("./controllers/notifications.controller");
+
+        const currentUser = req.user._id;
+
+        const testUserNames = ["alex_smith", "john_doe", "emma_wilson"];
+        const testUsers = [];
+
+        for (const username of testUserNames) {
+            let u = await userModel.findOne({ username });
+            if (!u) {
+                u = new userModel({
+                    name: username.replace("_", " ").toUpperCase(),
+                    username: username,
+                    passwordHash: "dummy_" + Date.now(),
+                    email: `${username}@example.com`,
+                    profileImg: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=988&auto=format&fit=crop"
+                });
+                await u.save();
+            }
+            testUsers.push(u);
+        }
+
+        let messagesCount = 0;
+        let createdConversations = [];
+
+        for (const testUser of testUsers) {
+            // Create test conversation
+            let conversation = await Conversation.findOne({
+                participants: { $all: [currentUser, testUser._id] }
+            });
+
+            if (!conversation) {
+                conversation = new Conversation({
+                    participants: [currentUser, testUser._id],
+                    lastMessage: "Test message",
+                    lastMessageTime: new Date()
+                });
+                await conversation.save();
+            }
+            createdConversations.push(conversation);
+
+            // Create test messages
+            const testMessages = [
+                { conversationId: conversation._id, sender: testUser._id, text: "Hey! How are you?" },
+                { conversationId: conversation._id, sender: currentUser, text: "I'm doing great! Thanks for asking" },
+                { conversationId: conversation._id, sender: testUser._id, text: "Want to hang out later?" }
+            ];
+
+            for (const msgData of testMessages) {
+                const existing = await Message.findOne({ conversationId: conversation._id, sender: msgData.sender, text: msgData.text });
+                if (!existing) {
+                    const msg = new Message(msgData);
+                    await msg.save();
+                    messagesCount++;
+                }
+            }
+
+            // Create test notifications
+            const testNotifications = [
+                { recipient: currentUser, sender: testUser._id, type: "like", message: "liked your post" },
+                { recipient: currentUser, sender: testUser._id, type: "follow", message: "started following you" }
+            ];
+
+            for (const notifData of testNotifications) {
+                const existing = await Notification.findOne({ recipient: currentUser, sender: testUser._id, type: notifData.type });
+                if (!existing) {
+                    const notif = new Notification(notifData);
+                    await notif.save();
+                }
+            }
+        }
+
+        res.json({
+            message: "✅ Test data created! Check Messages and Notifications pages",
+            conversations: createdConversations.length,
+            messagesAdded: messagesCount
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error creating test data", error: err.message });
+    }
+});
 
 app.listen(PORT, () => {
     //console.log(process.env);
