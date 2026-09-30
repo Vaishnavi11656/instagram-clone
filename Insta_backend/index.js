@@ -181,6 +181,58 @@ app.post("/comments/:postId", verifyAuth, createComment);
 app.get("/comments/:postId", verifyAuth, getAllComments)
 app.patch("/comments/:commentId", verifyAuth, updateComment)
 
+// ================= AI CAPTION GENERATOR =================
+
+app.post("/ai/caption", async (req, res) => {
+    try {
+        const { prompt } = req.body;
+
+        if (!prompt) {
+            return res.status(400).json({
+                message: "Prompt is required",
+            });
+        }
+
+        const response = await fetch("http://localhost:11434/api/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "llama3.2:3b",
+                prompt: `Generate a short, creative Instagram caption for this:
+
+${prompt}
+
+Rules:
+- Give only one caption
+- Keep it short
+- Make it natural and engaging
+- You may use 1-3 emojis
+- Do not explain anything`,
+                stream: false,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Ollama request failed");
+        }
+
+        const data = await response.json();
+
+        res.json({
+            caption: data.response.trim(),
+        });
+
+    } catch (error) {
+        console.error("AI caption error:", error);
+
+        res.status(500).json({
+            message: "Failed to generate caption",
+        });
+    }
+});
+
 // DEBUG: Create sample messages and notifications
 app.get("/debug/create-test-data", verifyAuth, async (req, res) => {
     try {

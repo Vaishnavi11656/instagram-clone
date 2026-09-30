@@ -26,13 +26,17 @@ export const Posts = ({ posts, setPosts }) => {
   }
 
   function handleCommentAdd(postId) {
-    setPosts(
-      posts.map((p) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((p) => {
         if (p._id === postId) {
-          return { ...p, commentCount: p.commentCount + 1 };
+          return {
+            ...p,
+            commentCount: (p.commentCount || 0) + 1,
+          };
         }
+
         return p;
-      }),
+      })
     );
   }
 
