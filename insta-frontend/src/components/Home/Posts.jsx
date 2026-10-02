@@ -4,7 +4,9 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { Post } from "./Post";
 import { getPostsApi } from "../../api/posts.api";
 
-const BASE_URL = "http://127.0.0.1:4000";
+const BASE_URL =
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:4000";
+
 
 export const Posts = ({ posts, setPosts }) => {
   const { user } = useContext(AuthContext);

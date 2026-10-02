@@ -2,7 +2,8 @@ import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(undefined);
-const BASE_URL = "http://127.0.0.1:4000";
+const BASE_URL =
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:4000";
 const LS_KEY = "user_details";
 
 const AuthProvider = ({ children }) => {

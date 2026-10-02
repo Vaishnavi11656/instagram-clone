@@ -9,7 +9,9 @@ import {
     IoImagesOutline,
 } from "react-icons/io5";
 
-const BASE_URL = "http://127.0.0.1:4000";
+const BASE_URL =
+    import.meta.env.VITE_API_URL || "http://127.0.0.1:4000";
+
 
 const customStyles = {
     overlay: {
